@@ -1,8 +1,33 @@
+FROM debian:11.8
+
+WORKDIR /
+
+# Install dependencies for PhantomJS
+RUN apt-get update && \
+    apt-get install -y \
+        build-essential \
+        chrpath \
+        libssl-dev \
+        libxft-dev \
+        libfreetype6 \
+        libfreetype6-dev \
+        libfontconfig1 \
+        libfontconfig1-dev
+
+# Copy PhantomJS from local filesystem
+COPY --chmod=0755 ./phantomjs /usr/local/bin
+
+# Clean up
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 FROM node:12.22
 MAINTAINER massimo@it20.info
 
 WORKDIR /
 
+# Copy PhantomJS into Stage 1 (needed for npm install)
+COPY --from=0 /usr/local/bin/phantomjs /usr/local/bin/phantomjs
 RUN npm install -g @angular/cli@6.0.0
 
 RUN npm install node-sass@4.13.1
@@ -43,9 +68,9 @@ ENV UI_ENV=prod
 
 RUN chmod +x startup.sh
 
-COPY --from=0 /clarity-seed/src/prod/dist /clarity-seed/prod/dist
-COPY --from=0 /clarity-seed/src/test/dist /clarity-seed/test/dist
-COPY --from=0 /clarity-seed/src/dev/dist /clarity-seed/dev/dist
-
+COPY --from=1 /clarity-seed/src/prod/dist /clarity-seed/prod/dist
+COPY --from=1 /clarity-seed/src/test/dist /clarity-seed/test/dist
+COPY --from=1 /clarity-seed/src/dev/dist /clarity-seed/dev/dist
+ 
 CMD ["./startup.sh"]
 

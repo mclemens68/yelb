@@ -1,4 +1,4 @@
-FROM bitnami/ruby:2.7.4
+FROM ruby:2.7.8
 MAINTAINER massimo@it20.info
 
 ################## BEGIN INSTALLATION ######################
@@ -16,6 +16,7 @@ ENV RACK_ENV=production
 
 RUN gem install sinatra --no-document
 RUN gem install redis --no-document
+RUN gem install rackup --no-document
 ### hack to allow the setup of the pg gem (which would fail otherwise)
 RUN apt-get update
 RUN apt-get install libpq-dev -y
